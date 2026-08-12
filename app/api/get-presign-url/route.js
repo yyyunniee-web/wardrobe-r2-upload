@@ -12,10 +12,12 @@ const s3Client = new S3Client({
   }
 });
 
-export async function GET(request) {
+// 修改为 POST
+export async function POST(request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const key = searchParams.get("key");
+    const body = await request.json();
+    const key = body.key;
+
     if (!key) {
       return NextResponse.json({ error: "缺少文件key参数" }, { status: 400 });
     }
@@ -31,11 +33,12 @@ export async function GET(request) {
     return NextResponse.json({ uploadUrl, publicUrl }, {
       headers: {
         "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET,OPTIONS",
+        "Access-Control-Allow-Methods": "POST,OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type"
       }
     });
   } catch (err) {
+    console.error("签名接口异常：", err);
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }
@@ -44,7 +47,7 @@ export async function OPTIONS() {
   return NextResponse.json({}, {
     headers: {
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET,OPTIONS",
+      "Access-Control-Allow-Methods": "POST,OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type"
     }
   });
